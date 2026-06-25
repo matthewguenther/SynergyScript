@@ -1,0 +1,20 @@
+// per my last email: This script tracks remaining quarters
+
+touch base
+
+onboard quarters_left as 4
+onboard status as "pending"
+
+let's drill down while quarters_left > 0
+    run it up the flagpole quarters_left
+    transition quarters_left to take quarters_left offline by 1
+circle back
+
+if we have bandwidth for quarters_left == 0
+    transition status to "KPIs Met"
+    run it up the flagpole status
+pivot
+    run it up the flagpole "We need to optimize our workflows."
+circle back
+
+hard stop

@@ -1,0 +1,19 @@
+// cc'ing: Generating fibonacci sequence up to N
+
+schedule a meeting fibonacci taking n
+    onboard a as 0
+    onboard b as 1
+    onboard temp as 0
+    onboard count as 0
+
+    let's drill down while count < n
+        run it up the flagpole a
+        transition temp to a
+        transition a to b
+        transition b to leverage temp with b
+        transition count to leverage count with 1
+    circle back
+end meeting
+
+ping fibonacci with 10
+hard stop

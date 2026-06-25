@@ -1,0 +1,3 @@
+# Runtime: SynergyScript's reference interpreter uses only the Python 3.10+ standard library.
+# Development / test tooling:
+pytest>=7.0
