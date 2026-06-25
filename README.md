@@ -11,12 +11,9 @@ SynergyScript is an interpreted, imperative, dynamically typed esoteric language
 keywords are corporate jargon. You `onboard` a variable, `let's drill down while` you loop,
 and `circle back` to close your blocks. Source files use the **`.corp`** extension.
 
-<details>
-<summary>🎨 Banner concept (AI image generation prompt)</summary>
-
-> *A hyper-realistic, overly retouched stock photo of three impeccably dressed business professionals (one pointing a pen, one holding a glowing tablet, one nodding enthusiastically) standing around a transparent glass whiteboard. The whiteboard features a completely meaningless upward-trending line graph and the word "SYNERGY" written in bold blue marker. The lighting is sterile and aggressively optimistic. Lens flare in the top right corner. Corporate blue and gray color palette.*
-
-</details>
+<p align="center">
+  <img src="SynergyScript_Logo.png" alt="SynergyScript logo" width="640">
+</p>
 
 ---
 
