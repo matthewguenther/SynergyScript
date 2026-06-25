@@ -1,6 +1,6 @@
 # SynergyScript
 
-> The Enterprise-Grade Corporate Esoteric Language — the first programming language designed from the ground up to sound exactly like a Q3 deliverables read-out.
+> The Enterprise-Grade Corporate Esoteric Language - the first programming language designed from the ground up to sound exactly like a Q3 deliverables read-out.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -55,99 +55,98 @@ hard stop
 
 ## 📑 Language Reference
 
-> This section is **normative**. Where it uses "MUST" / "is" it defines required behavior for the reference implementation. The corporate flavor is preserved, but every construct below is specified precisely enough to build.
+> This is the official rulebook for how SynergyScript works. It's still written with a wink, but everything here is real and precise enough to actually build the language from. If you just want to *write* `.corp` programs, skim the cheat sheet in §4 and the examples below - that's honestly all you need.
 
-### 1. Architecture Overview
+### 1. How a Program Runs (The Org Chart)
 
-SynergyScript's reference implementation is written in **Python 3.10+** and uses a three-stage tree-walking pipeline:
+When you run a `.corp` file, it gets passed down the chain to three "employees," each with one job:
 
-| Stage | Module | Role |
+| Employee | What they do |
+| :--- | :--- |
+| **The Recruiter** ([lexer.py](src/synergyscript/lexer.py)) | Reads your file and chops it into the "words" the language knows. The tricky part: a phrase like `run it up the flagpole` counts as **one** word, not five. |
+| **The Middle Manager** ([parser.py](src/synergyscript/parser.py)) | Takes those words and works out the structure - which lines are loops, which are `if`s - and double-checks that every block you open also gets closed. |
+| **The Intern** ([interpreter.py](src/synergyscript/interpreter.py)) | Actually runs your program, line by line, and keeps track of your variables. |
+
+There's no separate "compile" or "build" step. The Intern just reads your code and does it.
+
+### 2. Writing a `.corp` File
+
+- Files end in **`.corp`** and are plain text (UTF-8).
+- **One instruction per line.** A new line means a new statement.
+- **Spaces and indentation are just for looks** and are ignored. Blocks begin and end with real words (`circle back`, `end meeting`), not by indenting.
+- Blank lines and comment-only lines are skipped.
+
+### 3. The One Weird Trick (Multi-Word Keywords)
+
+Most languages split your code wherever there's a space. SynergyScript can't, because its keywords are made of *several* words. `run it up the flagpole` is a single command, not a sentence.
+
+So the Recruiter always grabs the **longest** matching phrase it can. It tries `pivot to` before it tries plain `pivot`. It also respects word boundaries, so the keyword `as` won't accidentally fire inside the word `assets`.
+
+Here's everything the Recruiter recognizes:
+
+- **Keyword phrases** - the corporate vocabulary listed in §4.
+- **Names** (your variables and functions) - things like `quarters_left`. Letters, numbers, and underscores; can't start with a number.
+- **Numbers** - whole numbers like `42`.
+- **Text** - anything inside double quotes, like `"Hello World"`.
+- **Comparisons and commas** - `== != > < >= <=`, plus `,` for separating items in a list.
+- **Comments** - anything after `//` on a line is ignored. (Fun convention: starting a comment with `// cc'ing:` or `// per my last email:` reads great, but it's not special - it's just a normal comment.)
+
+### 4. The Vocabulary (Cheat Sheet)
+
+This is the dictionary: the corporate phrase on the left, what it actually means on the right.
+
+#### Kinds of Values
+| SynergyScript | What it really is | Examples |
 | :--- | :--- | :--- |
-| Lexer — "The Recruiter" | [src/synergyscript/lexer.py](src/synergyscript/lexer.py) | Tokenizes `.corp` files, recognizing **multi-word corporate phrases as single tokens** (see §3) |
-| Parser — "The Middle Manager" | [src/synergyscript/parser.py](src/synergyscript/parser.py) | Recursive-descent build of the AST, validating that every opened block is correctly closed |
-| Interpreter — "The Intern" | [src/synergyscript/interpreter.py](src/synergyscript/interpreter.py) | Walks the AST and executes it directly against nested runtime scopes |
+| `headcount` | A whole number | `0`, `42` |
+| `messaging` | Text | `"Hello World"` |
+| `buy-in` | True or false | `aligned` (true), `blocked` (false) |
+| `tbd` | "Nothing yet" / empty | `tbd` |
 
-There is no separate compile step and no bytecode in v1; the interpreter evaluates the AST in place. ("Transpile to Python bytecode" is a possible future optimization, explicitly out of scope for v1.)
+#### Doing Things
+| Phrase | What it does |
+| :--- | :--- |
+| `touch base` | Does nothing - a polite way to kick off a program. |
+| `onboard NAME as VALUE` | Creates a new variable. |
+| `transition NAME to VALUE` | Changes a variable that already exists. |
+| `run it up the flagpole VALUE` | Prints something to the screen. |
+| `poll the stakeholders into NAME` | Asks the user to type a line, saves it as text. |
+| `// ...` | A comment (ignored). |
 
-### 2. Source Files
+#### Math and Logic
+| Phrase | What it does |
+| :--- | :--- |
+| `leverage X with Y` | Add (`X + Y`) |
+| `take X offline by Y` | Subtract (`X - Y`) |
+| `scale X by Y` | Multiply (`X * Y`) |
+| `streamline X by Y` | Divide, whole numbers only (`X / Y`). Dividing by `0` is an error. |
+| `== != > < >= <=` | Compare two things; gives you back true or false |
+| `and` / `or` | Combine true/false conditions |
 
-- Extension: **`.corp`**. Encoding: **UTF-8**.
-- A program is a sequence of **statements separated by newlines**. One statement per line.
-- **Indentation is cosmetic** and ignored by the lexer. Blocks are delimited by explicit terminator phrases (`circle back`, `end meeting`) — never by whitespace.
-- Blank lines and comment-only lines are ignored.
+> Heads up: `take ... offline by ...` wraps around its two numbers like a sandwich - the first number goes after `take`, the second after `offline by`.
 
-### 3. Lexical Structure
-
-The lexer scans left to right and, at each position, applies **longest-phrase-first matching**: it attempts to match the longest known keyword phrase before falling back to shorter ones or to a literal/identifier. Phrase matching is **word-boundary aware** (`as` never matches inside `assets`).
-
-This is the single most important implementation detail: `pivot to` MUST be tried before `pivot`, and `run it up the flagpole` is one token, not five.
-
-**Token categories**
-
-- **Keyword phrases** — the corporate vocabulary in §4 (each maps to exactly one token type).
-- **Identifiers** — `[A-Za-z_][A-Za-z0-9_]*` that are not reserved phrases.
-- **Number literals** — integers, e.g. `42` (`headcount`).
-- **String literals** — double-quoted, e.g. `"Hello World"` (`messaging`).
-- **Symbols** — comparison operators `== != > < >= <=` and the argument separator `,`.
-- **Comments** — `//` to end of line. The idiomatic prefixes `// cc'ing:` and `// per my last email:` are conventional, not special; everything after `//` is discarded.
-- **Newline** — emitted as a statement separator token; runs of blank lines collapse to one.
-
-### 4. Vocabulary → Token Mapping
-
-This table is the contract shared by the lexer ([keywords.py](src/synergyscript/keywords.py)) and the parser. The reference implementation keeps it in one place; do not duplicate it.
-
-#### Data Types & Literal Values
-| SynergyScript | Standard | Literals |
-| :--- | :--- | :--- |
-| `headcount` | Integer | `0`, `42` |
-| `messaging` | String | `"Hello World"` |
-| `buy-in` | Boolean | `aligned` (true), `blocked` (false) |
-| `tbd` | Null / undefined | `tbd` |
-
-#### Statements
-| Phrase | Token | Meaning |
-| :--- | :--- | :--- |
-| `touch base` | `TOUCH_BASE` | Kickoff no-op (optional; conventionally the first line) |
-| `onboard NAME as EXPR` | `ONBOARD` / `AS` | Declare a variable in the current scope |
-| `transition NAME to EXPR` | `TRANSITION` / `TO` | Reassign an existing variable |
-| `run it up the flagpole EXPR` | `PRINT` | Write a value to stdout |
-| `poll the stakeholders into NAME` | `INPUT` | Read one line of stdin into a variable (as `messaging`) |
-| `// ...` | (discarded) | Comment |
-
-#### Operators (expressions)
-| Phrase | Token | Operation |
-| :--- | :--- | :--- |
-| `leverage X with Y` | `LEVERAGE` / `WITH` | `X + Y` |
-| `take X offline by Y` | `TAKE` / `OFFLINE_BY` | `X - Y` |
-| `scale X by Y` | `SCALE` / `BY` | `X * Y` |
-| `streamline X by Y` | `STREAMLINE` / `BY` | `X / Y` (integer division; `streamline` by `0` is a runtime error) |
-| `==` `!=` `>` `<` `>=` `<=` | comparison | yields `buy-in` |
-| `and` `or` | `AND` / `OR` | logical combinators (short-circuit), yield `buy-in` |
-
-> **Note:** `take ... offline by ...` is a *circumfix* operator. The lexer emits two tokens (`TAKE`, then `OFFLINE_BY`); the parser pairs them around the operands.
-
-#### Control Flow
-| Phrase | Token | Meaning |
-| :--- | :--- | :--- |
-| `if we have bandwidth for COND` | `IF` | If |
-| `pivot to COND` | `ELIF` | Else-if (zero or more) |
-| `pivot` | `ELSE` | Else (optional) |
-| `let's drill down while COND` | `WHILE` | While loop |
-| `hard stop` | `HARD_STOP` | Break innermost loop; **at top level / outside any loop, halt the program** |
-| `push to next quarter` | `CONTINUE` | Continue loop |
-| `circle back` | `END_BLOCK` | Close an `if` or `while` block |
+#### Loops, Ifs, and Branching
+| Phrase | What it does |
+| :--- | :--- |
+| `if we have bandwidth for CONDITION` | If |
+| `pivot to CONDITION` | Else-if (you can stack as many as you like) |
+| `pivot` | Else (optional) |
+| `let's drill down while CONDITION` | While loop |
+| `hard stop` | Break out of a loop. (Outside any loop, it ends the whole program.) |
+| `push to next quarter` | Skip to the next loop iteration (a.k.a. "continue") |
+| `circle back` | Closes an `if` or a `while` block |
 
 #### Functions
-| Phrase | Token | Meaning |
-| :--- | :--- | :--- |
-| `schedule a meeting NAME taking P1, P2` | `FUNC_DEF` / `TAKING` | Define a function |
-| `deliver EXPR` | `DELIVER` | Return a value from a function |
-| `end meeting` | `END_FUNC` | Close a function definition |
-| `ping NAME with A1, A2` | `PING` / `WITH` | Call a function (usable as a statement or an expression) |
+| Phrase | What it does |
+| :--- | :--- |
+| `schedule a meeting NAME taking P1, P2` | Define a function (with inputs) |
+| `deliver VALUE` | Hand a value back from a function |
+| `end meeting` | Closes a function |
+| `ping NAME with A1, A2` | Call a function |
 
-### 5. Grammar (EBNF)
+### 5. The Grammar (For the Nerds, Optional)
 
-Recursive descent over the phrase tokens above. `NEWLINE` separates statements; it is omitted from expression rules for clarity.
+You do **not** need this to write programs - the cheat sheet and examples cover everything. This is the exact, formal structure, here for anyone building or extending the language.
 
 ```ebnf
 program     = { statement } ;
@@ -193,32 +192,40 @@ primary     = NUMBER | STRING | "aligned" | "blocked" | "tbd"
             | call | IDENT ;
 ```
 
-Because every arithmetic operator is **keyword-led** with a fixed connector word, operands parse greedily without ambiguity (e.g. `leverage a with scale b by c` is `a + (b * c)`). Use explicit nested phrases for grouping; v1 has no parentheses.
+The short version: every math phrase starts with a keyword (`leverage`, `scale`, and friends) and uses a fixed connecting word, so there's never any confusion about which number pairs with which. For example, `leverage a with scale b by c` always means `a + (b * c)`. There are no parentheses in v1 - if you need grouping, just nest the phrases.
 
-### 6. Semantics
+### 6. The Rules That Trip People Up
 
-**Arithmetic phrases are pure expressions.** They evaluate to a value and have **no side effects** — they never mutate their operands. To change a variable you MUST use `transition`. (This is why `count += 1` is written `transition count to leverage count with 1`.)
+**Math never changes your variables.** Writing `leverage count with 1` just *calculates* `count + 1` and hands you the answer - it leaves `count` itself untouched. To actually update a variable, you have to `transition` it. That's why "add 1 to count" is written:
 
-**Truthiness** (for `if` / `while` / `and` / `or` conditions). Conditions should evaluate to `buy-in`; other types are coerced: `headcount` `0` → `blocked`, nonzero → `aligned`; empty `messaging` → `blocked`, non-empty → `aligned`; `tbd` → `blocked`.
+> `transition count to leverage count with 1`
 
-**Scope.** The top level is the global scope. Each function call creates a fresh local scope whose parent is the **global** scope (functions are not closures over their definition site in v1). `onboard` binds in the current scope; `transition` updates the nearest existing binding (local, then global) and errors if the name was never onboarded. Reads search local then global.
+**What counts as "true."** Conditions (in `if`, `while`, `and`, `or`) work best with true/false values. If you hand them something else, here's how it's judged:
 
-**Functions & return.** `deliver` returns a value and unwinds to the caller. A function that finishes without `deliver` returns `tbd`. A `call` used as a statement discards the result.
+- A `headcount` of `0` is false; any other number is true.
+- Empty text `""` is false; any other text is true.
+- `tbd` (nothing) is false.
 
-**`hard stop` / `touch base` resolution.** `hard stop` breaks the innermost enclosing loop; with no enclosing loop it halts the whole program with success. `touch base` is a no-op kickoff statement (so example programs that begin with it and those that don't are both valid).
+**Where variables live.** The main body of your program is the shared "global" space. Every time you call a function, it gets its own private workspace. Variables you `onboard` inside a function stay inside that function, and a function can only see its own variables plus the global ones (not the variables of whoever called it). `transition` updates the closest matching variable, and complains if that variable was never created in the first place.
 
-### 7. Errors & the `HR` Linter
+**Functions and handing values back.** `deliver` sends a value back and immediately exits the function. If a function finishes without a `deliver`, you get `tbd` back. If you call a function but don't use its result, the result is simply thrown away.
 
-The interpreter raises typed errors with a line number:
-- **Lex errors** — unrecognized token.
-- **Parse errors** — unclosed block (missing `circle back` / `end meeting`), stray terminator, malformed statement.
-- **Runtime errors** — undefined variable, type mismatch, division (`streamline`) by `0`, calling an undefined function or with the wrong arity.
+**`hard stop` and `touch base`, one more time.** `hard stop` breaks out of the innermost loop you're in - but if you're not in a loop at all, it just ends the program successfully. `touch base` does nothing whatsoever; it's purely a nice way to start things off. (So programs that begin with it and programs that don't are equally valid.)
 
-`HR` is a **static** linter (no execution) that emits passive-aggressive warnings. v1 checks:
-- Blocks opened but never closed (`circle back` / `end meeting`).
-- A terminator with no matching opener.
-- Variables `onboard`ed but never used.
-- `transition` to a name that was never `onboard`ed.
+### 7. Errors and the `HR` Linter
+
+When something's wrong, SynergyScript tells you the line number and what kind of problem it hit:
+
+- **Word errors** - it ran into something it doesn't recognize.
+- **Structure errors** - a block you opened was never closed (missing `circle back` or `end meeting`), a closer with nothing to close, or a line that doesn't make sense.
+- **Runtime errors** - using a variable that doesn't exist, mixing incompatible types, dividing by `0`, or calling a function that doesn't exist (or with the wrong number of inputs).
+
+`HR` is a separate tool that reviews your code **without running it** and leaves passive-aggressive sticky notes. Right now it flags:
+
+- Blocks you opened but never closed.
+- A closer (`circle back` / `end meeting`) that has nothing to close.
+- Variables you created but never used.
+- `transition`-ing a variable you never created.
 
 ```bash
 synergy HR scripts/q3_earnings.corp
@@ -280,7 +287,7 @@ hard stop
 ```
 
 > Note: arithmetic phrases are expressions, so increments are written with `transition`
-> (`transition count to leverage count with 1`) — there is no bare `leverage` statement.
+> (`transition count to leverage count with 1`) - there is no bare `leverage` statement.
 
 ---
 
@@ -288,9 +295,9 @@ hard stop
 
 ```
 src/synergyscript/
-├── lexer.py         # The Recruiter — tokenizer
-├── parser.py        # The Middle Manager — AST builder
-├── interpreter.py   # The Intern — tree-walking evaluator
+├── lexer.py         # The Recruiter - tokenizer
+├── parser.py        # The Middle Manager - AST builder
+├── interpreter.py   # The Intern - tree-walking evaluator
 ├── keywords.py      # canonical phrase → token table (§4)
 ├── tokens.py        # TokenType / Token
 ├── ast_nodes.py     # AST dataclasses
