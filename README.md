@@ -32,7 +32,7 @@ By leveraging a robust, scalable, and fully integrated corporate-jargon-based in
 Requires **Python 3.10+** (the reference interpreter uses only the standard library).
 
 ```bash
-git clone https://github.com/yourusername/synergyscript.git
+git clone https://github.com/matthewguenther/SynergyScript/synergyscript.git
 cd synergyscript
 pip install -e .          # installs the `synergy` command
 ```
