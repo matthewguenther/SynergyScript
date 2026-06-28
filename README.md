@@ -89,7 +89,7 @@ Here's everything the Recruiter recognizes:
 - **Numbers** - whole numbers like `42`.
 - **Text** - anything inside double quotes, like `"Hello World"`.
 - **Comparisons and commas** - `== != > < >= <=`, plus `,` for separating items in a list.
-- **Comments** - anything after `//` on a line is ignored. (Fun convention: starting a comment with `// cc'ing:` or `// per my last email:` reads great, but it's not special - it's just a normal comment.)
+- **Comments** - anything after `//` on a line is ignored. (Fun convention: starting a comment with `// cc'ing:` reads great, but it's not special - it's just a normal comment. Note that *inside a comment* the words `per my last email` are likewise just text; as actual code, though, `per my last email` is a real keyword - see §4.)
 
 ### 4. The Vocabulary (Cheat Sheet)
 
@@ -112,6 +112,11 @@ This is the dictionary: the corporate phrase on the left, what it actually means
 | `run it up the flagpole VALUE` | Prints something to the screen. |
 | `poll the stakeholders into NAME` | Asks the user to type a line, saves it as text. |
 | `// ...` | A comment (ignored). |
+
+#### Referring Back (Institutional Memory)
+| Phrase | What it does |
+| :--- | :--- |
+| `per my last email` | Stands in for the **last value you `run it up the flagpole`** - your institutional memory of the last figure you reported. Before you've reported anything, it's `tbd`. It's an expression, so you can reuse it anywhere a value is expected (`onboard summary as per my last email`, `leverage per my last email with 8`). See §6 for the precise rules. |
 
 #### Math and Logic
 | Phrase | What it does |
@@ -189,6 +194,7 @@ arithmetic  = "leverage"   arithmetic "with"       arithmetic
             | "streamline" arithmetic "by"          arithmetic
             | primary ;
 primary     = NUMBER | STRING | "aligned" | "blocked" | "tbd"
+            | "per my last email"
             | call | IDENT ;
 ```
 
@@ -209,6 +215,13 @@ The short version: every math phrase starts with a keyword (`leverage`, `scale`,
 **Where variables live.** The main body of your program is the shared "global" space. Every time you call a function, it gets its own private workspace. Variables you `onboard` inside a function stay inside that function, and a function can only see its own variables plus the global ones (not the variables of whoever called it). `transition` updates the closest matching variable, and complains if that variable was never created in the first place.
 
 **Functions and handing values back.** `deliver` sends a value back and immediately exits the function. If a function finishes without a `deliver`, you get `tbd` back. If you call a function but don't use its result, the result is simply thrown away.
+
+**`per my last email` is the last thing you reported.** The interpreter keeps one program-wide register: the value of the most recent `run it up the flagpole`. `per my last email` evaluates to that value. The fine print:
+
+- **Only `run it up the flagpole` writes to it.** `onboard`, `transition`, function calls, and `deliver` do *not* - assigning or returning a value isn't the same as putting it in writing.
+- **It updates *after* printing.** So `run it up the flagpole per my last email` echoes the previous report and leaves the register unchanged.
+- **It starts as `tbd`.** Reading it before you've reported anything is allowed - you just get `tbd` ("no prior correspondence"), not an error.
+- **It's one register for the whole program, not a scoped variable.** A `run it up the flagpole` inside a function updates the same register the top level reads, so `per my last email` always reflects the last thing *anyone* reported.
 
 **`hard stop` and `touch base`, one more time.** `hard stop` breaks out of the innermost loop you're in - but if you're not in a loop at all, it just ends the program successfully. `touch base` does nothing whatsoever; it's purely a nice way to start things off. (So programs that begin with it and programs that don't are equally valid.)
 
@@ -289,6 +302,30 @@ hard stop
 > Note: arithmetic phrases are expressions, so increments are written with `transition`
 > (`transition count to leverage count with 1`) - there is no bare `leverage` statement.
 
+### Per My Last Email (Circling Back)
+
+```text
+// per my last email: circling back on the figures from our last sync, as discussed
+
+touch base
+
+// Report a number. This becomes "my last email".
+run it up the flagpole scale 7 by 6
+
+// Per my last email, that figure was 42 - build on it instead of recomputing.
+run it up the flagpole leverage per my last email with 8
+
+// You can also capture it into a variable for the deck.
+onboard final_number as per my last email
+run it up the flagpole final_number
+
+hard stop
+```
+
+Output: `42`, then `50`, then `50`. The first `run it up the flagpole` files the
+report; `per my last email` reads it back without recomputing it. (Full script:
+[scripts/per_my_last_email.corp](scripts/per_my_last_email.corp).)
+
 ---
 
 ## 🛠️ Project Layout & Development
@@ -318,11 +355,11 @@ pytest tests/test_lexer.py::test_phrase_longest_match   # run a single test
 
 ---
 
-## A Note on How This Was Built
+## 🔎 A Note on How This Was Built
 
-This project was built with significant help from AI (Claude). I worked as a web developer early in my career, but that was a long time ago, and I'll happily admit those skills have gotten rusty in the years since. SynergyScript is a for-fun project — an excuse to build a small interpreted language around a running joke about corporate jargon — not a polished, production-grade tool, and definitely not one you should run anything important on.
+This project was built with significant help from AI (Claude). I worked as a web developer early in my career, but that was a long time ago, and I'll happily admit I'm far from an expert developer. SynergyScript is a FOR-FUN project. An excuse to build a small interpreted language around a running joke about corporate jargon. This is not a polished, production-grade tool, and definitely not one you should run anything important on.
 
-Being straight about where it stands: the part I've put the most care into is the **spec** — the language reference above is meant to be precise enough to actually build from. The implementation behind it is still a work in progress; several stages are scaffolded with the heavy lifting yet to be filled in, so today it's more "designed" than "finished."
+The part I've put the most care into is the **spec**. The language reference above is meant to be precise enough to actually build from. The implementation behind it is still a work in progress. Several stages are scaffolded with the heavy lifting yet to be filled in, so today it's more "designed" than "finished."
 
 What I've leaned on so far has mostly been hands-on:
 
@@ -331,16 +368,16 @@ What I've leaned on so far has mostly been hands-on:
 
 That leaves plenty I'd genuinely welcome a second set of eyes on:
 
-- Correctness of the lexer / parser / interpreter against the grammar in §5 — especially the fiddly bits like longest-match tokenization and the `take … offline by …` circumfix
-- Gaps or ambiguities in the spec itself — places where two readings are possible and I only picked one
+- Correctness of the lexer / parser / interpreter against the grammar in §5 - especially the fiddly bits like longest-match tokenization and the `take … offline by …` circumfix
+- Gaps or ambiguities in the spec itself. Places where two readings are possible and I only picked one
 - Edge cases I haven't thought to test (odd whitespace, deeply nested blocks, scoping corners)
-- Code quality & idiomatic patterns — places where this isn't the modern, idiomatic way to do things in Python
+- Code quality & idiomatic patterns. Places where this isn't the modern, idiomatic way to do things in Python
 
-Issues and PRs are genuinely welcome — including blunt "this is bad practice, here's why" feedback. I'm here to learn.
+Issues and PRs are genuinely welcome, including blunt "this is bad practice, here's why" feedback. I'm here to learn.
 
 ## 🤝 Contributing
 
-Please ensure all pull requests are approved by at least three managers and align with our core values. Do not push directly to main; that is a career-limiting move.
+Please ensure all pull requests are approved by at least three managers and align with our core values. Do not push directly to main. That is a career-limiting move.
 
 ## 📄 License
 

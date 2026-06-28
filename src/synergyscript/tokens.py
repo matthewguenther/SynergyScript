@@ -18,6 +18,7 @@ class TokenType(Enum):
     TRUE = auto()         # aligned
     FALSE = auto()        # blocked
     NULL = auto()         # tbd
+    LAST_EMAIL = auto()   # per my last email (the last value run up the flagpole)
 
     # Variable statements
     TOUCH_BASE = auto()   # touch base

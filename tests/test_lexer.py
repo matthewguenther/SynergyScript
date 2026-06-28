@@ -1,14 +1,10 @@
-"""Lexer specs. Marked xfail until the Recruiter is implemented.
+"""Lexer specs.
 
 Run a single test:  pytest tests/test_lexer.py::test_phrase_longest_match
 """
 
-import pytest
-
 from synergyscript.lexer import tokenize
 from synergyscript.tokens import TokenType as T
-
-pytestmark = pytest.mark.xfail(reason="Lexer not yet implemented", strict=False)
 
 
 def _types(source):

@@ -1,4 +1,4 @@
-"""Parser specs. Marked xfail until the Middle Manager is implemented."""
+"""Parser specs."""
 
 import pytest
 
@@ -6,8 +6,6 @@ from synergyscript import ast_nodes as ast
 from synergyscript.errors import ParseError
 from synergyscript.lexer import tokenize
 from synergyscript.parser import parse
-
-pytestmark = pytest.mark.xfail(reason="Parser not yet implemented", strict=False)
 
 
 def test_onboard_builds_node():

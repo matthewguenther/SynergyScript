@@ -1,10 +1,6 @@
-"""End-to-end interpreter specs. Marked xfail until the Intern is implemented."""
-
-import pytest
+"""End-to-end interpreter specs."""
 
 from synergyscript.interpreter import run_source
-
-pytestmark = pytest.mark.xfail(reason="Interpreter not yet implemented", strict=False)
 
 
 def test_hello_world(capsys, hello_source):

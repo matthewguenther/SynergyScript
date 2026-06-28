@@ -104,6 +104,11 @@ class Var(Node):                 # identifier reference
 
 
 @dataclass
+class LastEmail(Node):           # per my last email — the last value run up the flagpole
+    line: int = 0
+
+
+@dataclass
 class BinaryOp(Node):            # leverage/take/scale/streamline, comparisons, and/or
     op: str                      # e.g. "+", "-", "*", "/", "==", ">", "and"
     left: "Node"

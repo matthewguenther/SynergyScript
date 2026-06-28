@@ -51,6 +51,8 @@ PHRASE_TOKENS: dict[str, T] = {
     "aligned": T.TRUE,
     "blocked": T.FALSE,
     "tbd": T.NULL,
+    # institutional memory — the last value run up the flagpole
+    "per my last email": T.LAST_EMAIL,
 }
 
 # Symbol operators. Match longest first (handled by SYMBOLS_LONGEST_FIRST).
@@ -64,8 +66,13 @@ SYMBOL_TOKENS: dict[str, T] = {
     ",": T.COMMA,
 }
 
-# Reserved words that may never be used as identifiers (every word that appears
-# in any keyword phrase).
+# Every individual word that appears in any keyword phrase. NOTE: appearing here
+# does not by itself make a word unusable as a name. Longest-phrase-first lexing
+# means only words that are *themselves* a standalone single-word phrase (``as``,
+# ``to``, ``with``, ``onboard``, …) are unavailable as identifiers; a word that
+# only ever shows up inside a multi-word phrase — e.g. ``a`` in
+# ``schedule a meeting`` — is a perfectly legal name (``fibonacci.corp`` uses
+# ``a`` and ``b``). Kept as a reference set for tooling such as HR.
 RESERVED_WORDS: frozenset[str] = frozenset(
     word for phrase in PHRASE_TOKENS for word in phrase.split()
 )
