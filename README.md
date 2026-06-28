@@ -318,11 +318,11 @@ pytest tests/test_lexer.py::test_phrase_longest_match   # run a single test
 
 ---
 
-## A Note on How This Was Built
+## 🔎 A Note on How This Was Built
 
 This project was built with significant help from AI (Claude). I worked as a web developer early in my career, but that was a long time ago, and I'll happily admit those skills have gotten rusty in the years since. SynergyScript is a for-fun project — an excuse to build a small interpreted language around a running joke about corporate jargon — not a polished, production-grade tool, and definitely not one you should run anything important on.
 
-Being straight about where it stands: the part I've put the most care into is the **spec** — the language reference above is meant to be precise enough to actually build from. The implementation behind it is still a work in progress; several stages are scaffolded with the heavy lifting yet to be filled in, so today it's more "designed" than "finished."
+Being straight about where it stands: the part I've put the most care into is the **spec** - the language reference above is meant to be precise enough to actually build from. The implementation behind it is still a work in progress; several stages are scaffolded with the heavy lifting yet to be filled in, so today it's more "designed" than "finished."
 
 What I've leaned on so far has mostly been hands-on:
 
@@ -331,12 +331,12 @@ What I've leaned on so far has mostly been hands-on:
 
 That leaves plenty I'd genuinely welcome a second set of eyes on:
 
-- Correctness of the lexer / parser / interpreter against the grammar in §5 — especially the fiddly bits like longest-match tokenization and the `take … offline by …` circumfix
-- Gaps or ambiguities in the spec itself — places where two readings are possible and I only picked one
+- Correctness of the lexer / parser / interpreter against the grammar in §5 - especially the fiddly bits like longest-match tokenization and the `take … offline by …` circumfix
+- Gaps or ambiguities in the spec itself - places where two readings are possible and I only picked one
 - Edge cases I haven't thought to test (odd whitespace, deeply nested blocks, scoping corners)
-- Code quality & idiomatic patterns — places where this isn't the modern, idiomatic way to do things in Python
+- Code quality & idiomatic patterns - places where this isn't the modern, idiomatic way to do things in Python
 
-Issues and PRs are genuinely welcome — including blunt "this is bad practice, here's why" feedback. I'm here to learn.
+Issues and PRs are genuinely welcome - including blunt "this is bad practice, here's why" feedback. I'm here to learn.
 
 ## 🤝 Contributing
 
